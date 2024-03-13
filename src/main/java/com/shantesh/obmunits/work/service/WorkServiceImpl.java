@@ -1,12 +1,14 @@
 package com.shantesh.obmunits.work.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.shantesh.obmunits.work.dto.WorkDto;
-
+import com.shantesh.obmunits.work.dto.WorkDtoSave;
 import com.shantesh.obmunits.work.exception.ObjectNotFound;
 import com.shantesh.obmunits.work.mapper.WorkMapper;
 import com.shantesh.obmunits.work.repository.WorkRepository;
@@ -21,7 +23,7 @@ public class WorkServiceImpl implements WorkService {
 	private final WorkMapper workMapper;
 	
 	@Override
-	public void saveWork(WorkDto workDto) {
+	public void saveWork(WorkDtoSave workDto) {
 		// TODO Auto-generated method stub
 		workRepository.save(workMapper.workDtoToWork(workDto));
 	}
@@ -60,9 +62,31 @@ public class WorkServiceImpl implements WorkService {
 	}
 
 	@Override
-	public void patchWorkByWorkId(String workId, WorkDto workDto) {
+	public void patchWorkByWorkId(String id,WorkDto workDto) {
 		// TODO Auto-generated method stub
-		
+		workRepository.findById(id).ifPresentOrElse((work)->{
+			if(StringUtils.hasText(workDto.getPersonId())) {
+				work.setPersonId(workDto.getPersonId());
+			}
+			if( StringUtils.hasText(workDto.getProjectNo()) ) {
+				work.setProjectNo(workDto.getProjectNo());
+			}
+			if(workDto.getUnitsOfWork() !=0 ) {
+				work.setUnitsOfWork(workDto.getUnitsOfWork());
+			}
+			if(workDto.getWeekNo() !=0){
+				work.setWeekNo(workDto.getWeekNo());
+			}
+		}, ()->{
+			throw new ObjectNotFound("the id is not found");
+		});
+	}
+
+	@Override
+	public Optional<WorkDto> getWorkById(String workId) {
+		// TODO Auto-generated method stub
+		return Optional.ofNullable(workMapper.workToWorkDto(workRepository.findById(workId).get())); 
+				
 	}
 
 }
